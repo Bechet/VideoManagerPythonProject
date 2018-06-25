@@ -1,1 +1,1 @@
-Low C-0.3,Low D-0.5,Middle C-1,Middle B-2,Middle A-1,Middle A-1,Middle B-1,Middle F-1,Middle G-1,Middle E-1
+Low C-1.0,Low D-1.0,Middle E-1.0,Middle F-1.0,Middle G-1.0,Middle A-1.0,Middle B-1.0,Middle C-1.0,Middle C-0.5,Middle B-0.5,Middle A-0.5,Middle G-0.5,Middle F-0.5,Middle E-0.5,Low D-0.5,Low C-0.5
