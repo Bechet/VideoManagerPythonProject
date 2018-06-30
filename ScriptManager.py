@@ -30,7 +30,7 @@ class ScriptManager():
         
     def getCurrentDuration(self):
         if len(self.listOfTitleAndDuration) > self.pointerIndex:
-            return float(self.listOfTitleAndDuration[self.pointerIndex][1])
+            return eval(self.listOfTitleAndDuration[self.pointerIndex][1])
         else:
             return None
         
