@@ -22,14 +22,15 @@ class MidiManager():
         
     def initHashMap(self):
         hashMap = {}
-        hashMap['A4'] = "Middle A"
-        hashMap['B4'] = "Middle B"
-        hashMap['C4'] = "Low C"
-        hashMap['D4'] = "Low D"
-        hashMap['E4'] = "Middle E"
-        hashMap['F4'] = "Middle F"
-        hashMap['G4'] = "Middle G"
-        hashMap['C5'] = "Middle C"
+        print("Initializing mapper from file in path : ./Mapper/mapper.txt")
+        file = open("./Mapper/mapper.txt", "r")
+        content = file.read().replace('\n','')
+        splitContent = content.split(',')
+        for noteSignAndTitle in splitContent:
+            couple = noteSignAndTitle.split('-')
+            hashMap[couple[0]] = couple[1]
+            print("Mapping : " + couple[0] + "\twith " + couple[1])
+        print("Initializing mapper ... Done")
         return hashMap
         
     def getListOfNotesAndRests(self):

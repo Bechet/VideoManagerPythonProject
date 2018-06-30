@@ -5,7 +5,6 @@ from MidiManager import MidiManager
 
 class Main():
     def __init__(self, ):
-#        self.videoManager = VideoManager()
         self.initIHM()
         
     def initIHM(self):
