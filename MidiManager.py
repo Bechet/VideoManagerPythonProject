@@ -38,13 +38,14 @@ class MidiManager():
         return [noteAndRest for noteAndRest in part.notesAndRests]
             
     def getFileNameFromNote(self, note):
-        if (self.hashMap.get(str(note.pitch))) is None:
-            print("####### Careful #######")
-            print("There is not file mapped with :" + str(note.pitch))
-        if (note.isNote):
-            return self.hashMap.get(str(note.pitch))
-        else:   #Rest
+        if not note.isNote:
             return "Rest"
+        else:
+            if (self.hashMap.get(str(note.pitch))) is None:
+                print("####### Careful #######")
+                print("There is not file mapped with :" + str(note.pitch))
+            if (note.isNote):
+                return self.hashMap.get(str(note.pitch))
     
     def getDurationFromNoteOrRest(self, note):
         return note.duration.quarterLength
