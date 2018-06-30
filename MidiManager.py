@@ -27,7 +27,7 @@ class MidiManager():
         content = file.read().replace('\n','')
         splitContent = content.split(',')
         for noteSignAndTitle in splitContent:
-            couple = noteSignAndTitle.split('-')
+            couple = noteSignAndTitle.split(':')
             hashMap[couple[0]] = couple[1]
             print("Mapping : " + couple[0] + "\twith " + couple[1])
         print("Initializing mapper ... Done")
