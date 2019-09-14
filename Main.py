@@ -5,6 +5,7 @@ from MidiManager import MidiManager
 
 class Main():
     def __init__(self, ):
+        print("Init main")
         self.initIHM()
         
     def initIHM(self):
