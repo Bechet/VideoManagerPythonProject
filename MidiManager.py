@@ -1,29 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from music21 import converter
+import Constant
 
 class MidiManager():
-    def __init__(self, _path, _generatedScriptName):
+    def __init__(self):
         self.hashMap = self.initHashMap()
-        self.fileType = '.mid'
-        if _path == '':
-            self.path = "./Midi/midi.mid"
-        else:
-            if not _path.endswith(self.fileType):
-                self.path = _path + self.fileType
-        if _generatedScriptName =='':
-            self.scriptPath = "./Script/script.txt"
-        else:
-            self.scriptPath = './Script/' + _generatedScriptName
-            if not _generatedScriptName.endswith(".txt"):
-                self.scriptPath = self.scriptPath + '.txt'
-        self.streamScore=converter.parse(self.path)
+        self.streamScore=converter.parse(Constant.midi_path_name)
         self.listOfNotesAndRests = self.getListOfNotesAndRests()
         
     def initHashMap(self):
         hashMap = {}
-        print("Initializing mapper from file in path : ./Mapper/mapper.txt")
-        file = open("./Mapper/mapper.txt", "r")
+        print("Initializing mapper from file in path :"+ Constant.mapper_file_path_name)
+        file = open(Constant.mapper_file_path_name, "r")
         content = file.read().replace('\n','')
         splitContent = content.split(',')
         for noteSignAndTitle in splitContent:
@@ -62,9 +51,10 @@ class MidiManager():
         return strRes
     
     def saveScriptIntoFile(self):
+        print("Saving script into file...")
         script = self.getScript()
-        file = open(self.scriptPath, "w")
+        file = open(Constant.script_path_name, "w")
         file.write(script)
         print("Done")
-        print("Script generated at: " + self.scriptPath)
+        print("Script generated at: " + Constant.script_path_name)
         file.close()

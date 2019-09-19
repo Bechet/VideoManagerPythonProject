@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
+import Constant
 
 class ScriptManager():
-    def __init__(self, scriptFilePath):
+    def __init__(self):
         self.pointerIndex = 0
-        self.scriptFilePath = scriptFilePath
-        self.scriptFileContent = self.getScript(self.scriptFilePath).rstrip()
+        self.scriptFileContent = self.getScript().rstrip()
         self.listOfTitleAndDuration = self.getListOfTitleAndDuration(self.scriptFileContent)
         
-    def getScript(self, scriptFilePath):
+    def getScript(self):
         print("getting script")
-        file = open(scriptFilePath,'r')
+        file = open(Constant.script_path_name,'r')
         return file.read()
     
     def getListOfTitleAndDuration(self, scriptFileContent):

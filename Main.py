@@ -1,50 +1,60 @@
 from VideoManager import VideoManager
 from functools import partial
-from tkinter import Tk, Label, Entry, Button
+from tkinter import Tk, Label, ttk, Button
 from MidiManager import MidiManager
+from FileManager import FileManager
+import gc, sys
+import psutil
+import Constant
+import os
 
 class Main():
     def __init__(self, ):
         print("Init main")
+        self.initVariable()
         self.initIHM()
+        print("Memory check ", psutil.virtual_memory())
+        gc.collect()
+        print("Memory check ", psutil.virtual_memory()[2])
+        sys.exit(0)
+        
+    
+    def initVariable(self):
+        self.fileManager = FileManager()
         
     def initIHM(self):
-        root = Tk()
-        labelVideoFolderPath = Label(root, text='Video Folder Path: (ex: D:/folderName/) (default: ./Input/)')
-        labelVideoOutput = Label(root, text='Video Output File (Path+) Name: ')
-        labelScriptFilePath = Label(root, text='Script File Path: (default: ./Script/script.txt)')
-        labelMidiFilePath = Label(root, text="MidiFilePath: (ex: ./Midi/midiFile) (defalt: ./Midi/midi.mid)")
-        labelGeneratedScriptName = Label(root, text="Script generated Name: (ex: Script123) (default: ./Script/script.txt)")
-        self.entryVideoFolderPath = Entry(root)
-        self.entryVideoOutput = Entry(root)
-        self.entryScriptFilePath = Entry(root)
-        self.entryMidiFilePath = Entry(root)
-        self.entryGeneratedScriptName= Entry(root)
-        executeButton = Button(root, text="execute", command=partial(self.run))
-        generateScriptButton = Button(root, text="generateScript", command=partial(self.generateScript))
-        labelVideoFolderPath.grid(column=0, row=0)
-        labelVideoOutput.grid(column=0, row=1)
-        labelScriptFilePath.grid(column=0, row=2)
-        self.entryVideoFolderPath.grid(column=1, row=0)
-        self.entryVideoOutput.grid(column=1, row=1)
-        self.entryScriptFilePath.grid(column=1, row=2)
-        executeButton.grid(row = 3)
-        labelMidiFilePath.grid(column = 0, row = 4)
-        self.entryMidiFilePath.grid(column=1, row=4)
-        labelGeneratedScriptName.grid(column = 0, row=5)
-        self.entryGeneratedScriptName.grid(column=1, row=5)
-        generateScriptButton.grid(row=6)
-        root.mainloop()
+        self.root = Tk()
+        labelInstrument = Label(self.root, text='Instrument')
+        self.comboboxSelectedInstrument= ttk.Combobox(self.root, values=self.fileManager.instrumentsFolderName)
+        self.comboboxSelectedInstrument.current(0)
+        executeButton = Button(self.root, text="execute", command=partial(self.run))
+        generateScriptButton = Button(self.root, text="generateScript", command=partial(self.generateScript))
+        testButton = Button(self.root, text="test", command=partial(self.test))
+        
+        labelInstrument.grid(column=0, row=0)
+        self.comboboxSelectedInstrument.grid(column=1, row=0)
+        generateScriptButton.grid(row=1)
+        executeButton.grid(row = 2)
+        testButton.grid(row=3)
+        self.root.mainloop()
     
     def run(self):
         print("executing")
-        print(self.entryVideoFolderPath.get())
-        print(self.entryVideoOutput.get())
-        videoManager = VideoManager(self.entryVideoFolderPath.get(), self.entryVideoOutput.get(), self.entryScriptFilePath.get())
-                           
+        selectedInstrumentFolderName = self.comboboxSelectedInstrument.get()
+        print("Selected Instrument folder:" + selectedInstrumentFolderName)
+        videoManager = VideoManager(selectedInstrumentFolderName)
+        videoManager.extecute()   
+        self.root.destroy()
+        gc.collect()
+        sys.exit(0)
+        
+                   
     def generateScript(self):
-        print("generating Script from midi file: " + self.entryMidiFilePath.get())
-        midiManager = MidiManager(self.entryMidiFilePath.get(), self.entryGeneratedScriptName.get())
+        midiManager = MidiManager()
         midiManager.saveScriptIntoFile()
-
+        
+    def test(self):
+        for file_name in (os.listdir(Constant.output_tmp_folder_path_name)):
+            print(file_name)
+        
 myinstance = Main()
