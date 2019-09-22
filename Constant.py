@@ -22,7 +22,6 @@ script_path_name=script_folder_name +  script_file_name
 output_video_path_name=output_video_folder_name + output_file_name
 output_tmp_video_path_name=output_tmp_folder_path_name + output_tmp_file_name
 
-
 baseInputVideoFolderPath= "./InputVideoFolder/"
 mapper_file_path_name="./Mapper/mapper.txt"
 
@@ -30,6 +29,8 @@ generated_sub_input_video_folder_name="generated"
 
 mp4suffix=".mp4"
 
+codecMpeg4='mpeg4'
+codecLibx264='libx264'
 
 
 
@@ -38,4 +39,13 @@ mp4suffix=".mp4"
 
 
 
+
+
+
+
+
+
+codec=codecLibx264
+# Split into tmp video file each "split_length" notes
+split_length=20
 max_memory_percentage=90

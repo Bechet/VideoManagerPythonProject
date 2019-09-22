@@ -11,10 +11,15 @@ class FileManager():
     def __init__(self):
         print("Init FileManager")
         self.instrumentsFolderName = []
+        self.midiFileName=[]
         self.notesInstrumentFileName = {}
         self.generatedNotesInstrumentFileName = {}
+        
+        self.initInstumentFolder()
+        self.initMidiFolder()
+        
+    def initInstumentFolder(self):
         for instrument_folder_name in os.listdir(Constant.baseInputVideoFolderPath):
-            print(instrument_folder_name)
             self.instrumentsFolderName.append(instrument_folder_name)
             self.notesInstrumentFileName[instrument_folder_name] = []
             for note_file_name in os.listdir(Constant.baseInputVideoFolderPath+instrument_folder_name):
@@ -25,8 +30,10 @@ class FileManager():
                     os.mkdir(generatedFolderPath)
                 else:
                     self.addGeneratedFileName(instrument_folder_name, generatedFolderPath)
-        print(self.notesInstrumentFileName)
-        print(self.generatedNotesInstrumentFileName)
+        
+    def initMidiFolder(self):
+        for midi_file_name in os.listdir(Constant.midi_folder_name):
+            self.midiFileName.append(midi_file_name)
         
     def addGeneratedFileName(self, instrumentFolderName, generatedFolderPath):
         tmpListFileName = []

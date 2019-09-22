@@ -4,9 +4,10 @@ from music21 import converter
 import Constant
 
 class MidiManager():
-    def __init__(self):
+    def __init__(self, _midiFileName):
+        print(_midiFileName)
         self.hashMap = self.initHashMap()
-        self.streamScore=converter.parse(Constant.midi_path_name)
+        self.streamScore=converter.parse(Constant.midi_folder_name + _midiFileName)
         self.listOfNotesAndRests = self.getListOfNotesAndRests()
         
     def initHashMap(self):
