@@ -1,1 +1,1 @@
-Low C-1.0,Low D-1.0,Middle E-1.0
+Low C-1.0,Low D-1.0,Middle E-1.0,Low C-1.0,Low D-1.0,Middle E-1.0

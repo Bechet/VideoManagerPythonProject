@@ -89,9 +89,6 @@ class VideoManager():
                 tmpFileConter = tmpFileConter + 1
                 print("Saving sub video in tmp folder, path: ", tmpFilePath)
                 self.concatVideoAndSave(self.listSlicedVideos, tmpFilePath)
-                #Reset
-                for video in self.listSlicedVideos:
-                    video.close()
                 self.listSlicedVideos=[]
                 gc.collect()
             self.scriptManager.next()
@@ -99,7 +96,7 @@ class VideoManager():
             noteCounter = noteCounter + 1
 
         if len(self.listSlicedVideos) > 0:
-            if len(self.listSlicedVideos) == 0:
+            if len(self.listSlicedVideos) == 1:
                 self.saveVideoIntoFile(self.listSlicedVideos[0], self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)
             else:
                 self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)    
