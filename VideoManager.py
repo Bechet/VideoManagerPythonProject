@@ -3,20 +3,20 @@
 from moviepy.video.compositing.concatenate import concatenate_videoclips
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from ScriptManager import ScriptManager
-from datetime import datetime
 import Constant
 import os
 import psutil
 import gc
 
 class VideoManager():
-    def __init__(self, _selectedInstrumentFolder):
-        self.hashmapFileName_File = {}
+    def __init__(self, _selectedInstrumentFolder, _boolConcatAtEnd, _outputFolderName):
         print("VideoManager Created, extracting path information...")
+        self.boolConcatAtEnd=_boolConcatAtEnd
+        print("Concat at end: ", self.boolConcatAtEnd)
+        self.outputFolderName = _outputFolderName
+        print("outputFolderName: ", self.outputFolderName)
         self.selectedInstrumentFolder = _selectedInstrumentFolder
-        now = datetime.now()
-        self.nowFolderName=now.strftime("%Y%m%d-%H%M%S")
-        self.tmpOutputFolderPath=Constant.output_video_folder_name+self.nowFolderName
+        self.tmpOutputFolderPath=Constant.output_video_folder_name+self.outputFolderName
     
     def extecute(self):
         print("Execution...")
@@ -29,12 +29,14 @@ class VideoManager():
         print("Spliting... ok")
         self.listSlicedVideos = []
         gc.collect()
-        for file_name in (os.listdir(self.tmpOutputFolderPath)):
-            self.listSlicedVideos.append(VideoFileClip(self.tmpOutputFolderPath + "/" + file_name))
-        if (len(self.listSlicedVideos) > 1):
-            self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.output_file_name)
-        del self.listSlicedVideos
-        gc.collect()
+        print("Concat at end: ", self.boolConcatAtEnd)
+        if (self.boolConcatAtEnd): 
+            for file_name in (os.listdir(self.tmpOutputFolderPath)):
+                self.listSlicedVideos.append(VideoFileClip(self.tmpOutputFolderPath + "/" + file_name))
+            if (len(self.listSlicedVideos) > 1):
+                self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.output_file_name)
+            del self.listSlicedVideos
+            gc.collect()
         print("Execution success!")
         
     def readAndSaveLocallyAllVideo(self):
@@ -50,6 +52,7 @@ class VideoManager():
         print("Slicing done")
         
     def readAndSaveAllVideoBis(self):
+        hashmapFileName_File={}
         tmpFileConter=0
         noteCounter=1
         print("Slicing input videos from script...")
@@ -70,37 +73,42 @@ class VideoManager():
                 self.saveVideoIntoFile(video, generatedFilePath)
                 print("End of generating file")
                 self.listSlicedVideos.append(video)
-                self.hashmapFileName_File[generatedFilePath]=video
+                hashmapFileName_File[generatedFilePath]=video
             else:
-                if self.hashmapFileName_File.__contains__(generatedFilePath):
-                    self.listSlicedVideos.append(self.hashmapFileName_File[generatedFilePath])
+                if hashmapFileName_File.__contains__(generatedFilePath):
+                    self.listSlicedVideos.append(hashmapFileName_File[generatedFilePath])
                 else:
                     video = VideoFileClip(generatedFilePath)
                     self.listSlicedVideos.append(video)
-                    self.hashmapFileName_File[generatedFilePath]=video
+                    hashmapFileName_File[generatedFilePath]=video
             # Memory check
             if (psutil.virtual_memory()[2] > memoryLimit or len(self.listSlicedVideos) is Constant.split_length):
                 print("Exceeding memory / split_length limit, saving into tmp video file")
                 print("Memory limit, current memory:", psutil.virtual_memory()[2])
-                tmpFilePath=self.tmpOutputFolderPath + "/" + str(tmpFileConter) + Constant.mp4suffix
+                tmpFilePath=self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix
                 tmpFileConter = tmpFileConter + 1
                 print("Saving sub video in tmp folder, path: ", tmpFilePath)
                 self.concatVideoAndSave(self.listSlicedVideos, tmpFilePath)
                 #Reset
                 for video in self.listSlicedVideos:
-                    video.reader.close()
-                    video.audio.reader.close_proc()
+                    video.close()
                 self.listSlicedVideos=[]
                 gc.collect()
             self.scriptManager.next()
             print("Current memory usage percentage: ", psutil.virtual_memory()[2])
             noteCounter = noteCounter + 1
+
         if len(self.listSlicedVideos) > 0:
             if len(self.listSlicedVideos) == 0:
-                self.saveVideoIntoFile(self.listSlicedVideos[0], self.tmpOutputFolderPath + "/" + str(tmpFileConter) + Constant.mp4suffix)
+                self.saveVideoIntoFile(self.listSlicedVideos[0], self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)
             else:
-                self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + str(tmpFileConter) + Constant.mp4suffix)    
-        self.hashmapFileName_File={}
+                self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)    
+            for video in self.listSlicedVideos:
+                video.close()
+        #close all
+        for key in hashmapFileName_File:
+            hashmapFileName_File[key].close()
+        hashmapFileName_File={}
         gc.collect()
         
     def concatVideo(self, listSlicedVideos):
@@ -112,6 +120,7 @@ class VideoManager():
         concatenatedVideo=concatenate_videoclips(listSlicedVideos)
         print("Saving...")
         self.saveVideoIntoFile(concatenatedVideo, path)
+        concatenatedVideo.close()
         del concatenatedVideo
         gc.collect()
         
