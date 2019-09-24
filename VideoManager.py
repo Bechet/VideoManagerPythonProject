@@ -69,7 +69,11 @@ class VideoManager():
             
             if not os.path.exists(generatedFilePath):
                 print("File not generated yet, generating into path :" + generatedFilePath)
-                video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix).subclip(0, duration)
+                print("############################test#############################")
+                print(duration-Constant.exceedTime)
+                print("############################end#############################")
+                video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix).subclip(0, duration-Constant.exceedTime)
+                
                 self.saveVideoIntoFile(video, generatedFilePath)
                 print("End of generating file")
                 self.listSlicedVideos.append(video)
