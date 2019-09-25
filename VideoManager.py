@@ -9,9 +9,11 @@ import psutil
 import gc
 
 class VideoManager():
-    def __init__(self, _selectedInstrumentFolder, _boolConcatAtEnd, _outputFolderName):
+    def __init__(self, _selectedInstrumentFolder, _boolConcatAtEnd, _boolOnlyGenerateSubFile, _boolUseGeneratedSubFile, _outputFolderName):
         print("VideoManager Created, extracting path information...")
         self.boolConcatAtEnd=_boolConcatAtEnd
+        self.boolOnlyGenerateSubFile = _boolOnlyGenerateSubFile
+        self.boolUseGeneratedSubFile = _boolUseGeneratedSubFile
         print("Concat at end: ", self.boolConcatAtEnd)
         self.outputFolderName = _outputFolderName
         print("outputFolderName: ", self.outputFolderName)
@@ -20,38 +22,56 @@ class VideoManager():
     
     def extecute(self):
         print("Execution...")
+        self.scriptManager = ScriptManager()
+        
         print("Generating tmp output folder in path: ", self.tmpOutputFolderPath)
         os.mkdir(self.tmpOutputFolderPath)
         print("Generating tmp output folder...ok")
-        self.scriptManager = ScriptManager()
-        print("Spliting into sub file... This could take couple minutes, take a coffee break ! =)")
-        self.readAndSaveAllVideoBis()
-        print("Spliting... ok")
-        self.listSlicedVideos = []
-        gc.collect()
-        print("Concat at end: ", self.boolConcatAtEnd)
-        if (self.boolConcatAtEnd): 
-            for file_name in (os.listdir(self.tmpOutputFolderPath)):
-                self.listSlicedVideos.append(VideoFileClip(self.tmpOutputFolderPath + "/" + file_name))
-            if (len(self.listSlicedVideos) > 1):
-                self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.output_file_name)
-            del self.listSlicedVideos
+        
+        print("Generating sub file...")
+        self.checkAndGenerateSubVideoFile()
+        print("Generating sub file... ok")
+    
+        if not (self.boolOnlyGenerateSubFile):
+            print("Generating concatenated sub file...")
+            self.readAndSaveAllVideoBis()
+            print("Generating concatenated sub file...")
+            self.listSlicedVideos = []
             gc.collect()
+            print("Concat at end: ", self.boolConcatAtEnd)
+            if (self.boolConcatAtEnd): 
+                for file_name in (os.listdir(self.tmpOutputFolderPath)):
+                    self.listSlicedVideos.append(VideoFileClip(self.tmpOutputFolderPath + "/" + file_name))
+                if (len(self.listSlicedVideos) > 1):
+                    self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.output_file_name)
+                del self.listSlicedVideos
+                gc.collect()
+        
         print("Execution success!")
         
-    def readAndSaveLocallyAllVideo(self):
-        print("Slicing input videos from script...")
-        self.listSlicedVideos = []
+    def checkAndGenerateSubVideoFile(self):
+        noteCounter=1
+        self.scriptManager.reInitPointer()
         while self.scriptManager.getCurrentCoupleTitleAndDuration() is not None:
+            print("")
+            print("Dealing note number : ", noteCounter)
             title = self.scriptManager.getCurrentTitle()
             duration = self.scriptManager.getCurrentDuration()
+            generatedFilePath=Constant.baseInputVideoFolderPath+ self.selectedInstrumentFolder + "/" + Constant.generated_sub_input_video_folder_name + "/" + title + "-" + str(duration) + Constant.mp4suffix
             print("Adding video with title: " + str(title) + " for " + str(duration)+ " seconds")
-            video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix).subclip(0, duration)
-            self.listSlicedVideos.append(video)
+            if not os.path.exists(generatedFilePath):
+                print("File not generated yet, generating into path :" + generatedFilePath)
+                video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix).subclip(0, duration-Constant.exceedTime)
+                self.saveVideoIntoFile(video, generatedFilePath)
+                print("End of generating file")
+                video.close()
+                del video
+                gc.collect()
+            noteCounter = noteCounter + 1
             self.scriptManager.next()
-        print("Slicing done")
         
     def readAndSaveAllVideoBis(self):
+        self.scriptManager.reInitPointer()
         hashmapFileName_File={}
         tmpFileConter=0
         noteCounter=1
@@ -66,25 +86,22 @@ class VideoManager():
             duration = self.scriptManager.getCurrentDuration()
             generatedFilePath=Constant.baseInputVideoFolderPath+ self.selectedInstrumentFolder + "/" + Constant.generated_sub_input_video_folder_name + "/" + title + "-" + str(duration) + Constant.mp4suffix
             print("Adding video with title: " + str(title) + " for " + str(duration)+ " seconds")
-            
-            if not os.path.exists(generatedFilePath):
-                print("File not generated yet, generating into path :" + generatedFilePath)
-                print("############################test#############################")
-                print(duration-Constant.exceedTime)
-                print("############################end#############################")
-                video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix).subclip(0, duration-Constant.exceedTime)
-                
-                self.saveVideoIntoFile(video, generatedFilePath)
-                print("End of generating file")
+
+            if hashmapFileName_File.__contains__(generatedFilePath):
+                self.listSlicedVideos.append(hashmapFileName_File[generatedFilePath])
+            else:
+                video = None
+                if self.boolUseGeneratedSubFile:
+                    video = VideoFileClip(generatedFilePath)
+                else:
+                    print("Not using generated sub file... spliting file...")
+                    video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix).subclip(0, duration)
+                print("Video:", video)
                 self.listSlicedVideos.append(video)
                 hashmapFileName_File[generatedFilePath]=video
-            else:
-                if hashmapFileName_File.__contains__(generatedFilePath):
-                    self.listSlicedVideos.append(hashmapFileName_File[generatedFilePath])
-                else:
-                    video = VideoFileClip(generatedFilePath)
-                    self.listSlicedVideos.append(video)
-                    hashmapFileName_File[generatedFilePath]=video
+                del video
+                gc.collect()
+
             # Memory check
             if (psutil.virtual_memory()[2] > memoryLimit or len(self.listSlicedVideos) is Constant.split_length):
                 print("Exceeding memory / split_length limit, saving into tmp video file")
@@ -106,9 +123,16 @@ class VideoManager():
                 self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)    
             for video in self.listSlicedVideos:
                 video.close()
+                del video
+                gc.collect()
         #close all
         for key in hashmapFileName_File:
             hashmapFileName_File[key].close()
+            hashmapFileName_File[key].close()
+            del hashmapFileName_File[key].reader
+            del hashmapFileName_File[key].audio
+            del hashmapFileName_File[key]
+            gc.collect()
         hashmapFileName_File={}
         gc.collect()
         
@@ -126,6 +150,4 @@ class VideoManager():
         gc.collect()
         
     def saveVideoIntoFile(self, video, path):
-        print(video)
-        print(path)
         video.write_videofile(path, codec=Constant.codec)

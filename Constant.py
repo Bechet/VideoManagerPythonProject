@@ -50,5 +50,7 @@ codec=codecLibx264
 split_length=20
 max_memory_percentage=90
 defaultConcatAtEnd=True
+defaultOnlyGenerateSubFile=False
+defaultUseGeneratedSubFile=True
 defaultSubFilePrefix="Part-"
 exceedTime=0.00

@@ -34,6 +34,13 @@ class Main():
         self.checkButtonConcatValue = BooleanVar()
         self.checkButtonConcatValue.set(Constant.defaultConcatAtEnd)
         checkButtonConcat=ttk.Checkbutton(self.root, text="Concatenate at end ?", var=self.checkButtonConcatValue)
+        self.checkButtonOnlyGenerateSubFileValue = BooleanVar()
+        self.checkButtonOnlyGenerateSubFileValue.set(Constant.defaultOnlyGenerateSubFile)
+        checkButtonOnlyGenerateSubFile=ttk.Checkbutton(self.root, text="Only generate sub note files ?", var=self.checkButtonOnlyGenerateSubFileValue)
+        self.checkButtonUseGeneratedSubFileValue = BooleanVar()
+        self.checkButtonUseGeneratedSubFileValue.set(Constant.defaultUseGeneratedSubFile)
+        checkButtonUseGeneratedSubFile=ttk.Checkbutton(self.root, text="Use generated sub note files ?", var=self.checkButtonUseGeneratedSubFileValue)
+        
         self.entryVideoOutputFolderName=Entry(self.root)
         
         rowIndex = 0
@@ -62,7 +69,15 @@ class Main():
         rowIndex = rowIndex + 1 
         
         checkButtonConcat.grid(column=0, row=rowIndex)
-        #testButton.grid(row=4)
+        
+        rowIndex = rowIndex + 1 
+        checkButtonOnlyGenerateSubFile.grid(column=0, row=rowIndex)
+        
+        rowIndex = rowIndex + 1 
+        checkButtonUseGeneratedSubFile.grid(column=0, row=rowIndex)
+        
+        rowIndex = rowIndex + 1
+        testButton.grid(row=rowIndex)
         
         self.root.mainloop()
     
@@ -73,7 +88,7 @@ class Main():
         print(outputFolderName)
         print("Selected Instrument folder:" + selectedInstrumentFolderName)
         self.root.destroy()
-        videoManager = VideoManager(selectedInstrumentFolderName, self.checkButtonConcatValue.get(), outputFolderName)
+        videoManager = VideoManager(selectedInstrumentFolderName, self.checkButtonConcatValue.get(), self.checkButtonOnlyGenerateSubFileValue.get(), self.checkButtonUseGeneratedSubFileValue.get(), outputFolderName)
         videoManager.extecute()   
         del videoManager
         gc.collect()
@@ -83,11 +98,7 @@ class Main():
         midiManager.saveScriptIntoFile()
         
     def test(self):
-        for file_name in (os.listdir(Constant.output_tmp_folder_path_name)):
-            print(file_name)
-        test = {}
-        test["test"]="test"
-        test["test2"]="test2"
-        print(test)
+        print("")
+        print(self.checkButtonConcatValue.get(), self.checkButtonOnlyGenerateSubFileValue)
         
 myinstance = Main()

@@ -45,3 +45,6 @@ class ScriptManager():
             print(self.listOfTitleAndDuration[self.pointerIndex])
         else:
             print('None')
+
+    def reInitPointer(self):
+        self.pointerIndex = 0
