@@ -76,8 +76,8 @@ class Main():
         rowIndex = rowIndex + 1 
         checkButtonUseGeneratedSubFile.grid(column=0, row=rowIndex)
         
-        rowIndex = rowIndex + 1
-        testButton.grid(row=rowIndex)
+        #rowIndex = rowIndex + 1 
+        #testButton.grid(row=rowIndex)
         
         self.root.mainloop()
     
@@ -98,7 +98,12 @@ class Main():
         midiManager.saveScriptIntoFile()
         
     def test(self):
-        print("")
-        print(self.checkButtonConcatValue.get(), self.checkButtonOnlyGenerateSubFileValue)
+        listt = []
+        listt.append(1)
+        listt.append(2)
+        listt.append(3)
+        listt.append(4)
+        print(listt[0])
+        
         
 myinstance = Main()

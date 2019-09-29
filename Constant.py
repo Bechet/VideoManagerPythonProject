@@ -47,10 +47,10 @@ codecLibx264='libx264'
 
 codec=codecLibx264
 # Split into tmp video file each "split_length" notes
-split_length=20
+split_length=2
 max_memory_percentage=90
 defaultConcatAtEnd=True
 defaultOnlyGenerateSubFile=False
 defaultUseGeneratedSubFile=True
 defaultSubFilePrefix="Part-"
-exceedTime=0.00
+exceedTime=1/25.0
