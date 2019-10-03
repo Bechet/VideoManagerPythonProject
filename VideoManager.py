@@ -43,9 +43,10 @@ class VideoManager():
             if (self.boolConcatAtEnd): 
                 counter = 0
                 for file_name in (os.listdir(self.tmpOutputFolderPath)):
+                    print("counter", counter)
                     duration = self.listDuration[counter]
                     video = VideoFileClip(self.tmpOutputFolderPath + "/" + file_name)
-                    video = self.changeVideoSetting(video, duration, 60)
+                    video = self.changeVideoSetting(video, duration, Constant.fps)
                     self.listSlicedVideos.append(video)
                     del video
                     counter = counter + 1
@@ -68,7 +69,7 @@ class VideoManager():
             if not os.path.exists(generatedFilePath):
                 print("File not generated yet, generating into path :" + generatedFilePath)
                 video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix)
-                video = self.changeVideoSetting(video, duration, 60)
+                video = self.changeVideoSetting(video, duration, Constant.fps)
                 self.saveVideoIntoFile(video, generatedFilePath)
                 print("End of generating file")
                 video.close()
@@ -96,16 +97,16 @@ class VideoManager():
             video = None
             if hashmapFileName_File.__contains__(generatedFilePath):
                 video = hashmapFileName_File[generatedFilePath]
-                video = self.changeVideoSetting(video, duration, 60)
+                video = self.changeVideoSetting(video, duration, Constant.fps)
             else:
                 video = None
                 if self.boolUseGeneratedSubFile:
                     video = VideoFileClip(generatedFilePath)
-                    video = self.changeVideoSetting(video, duration, 60)
+                    video = self.changeVideoSetting(video, duration, Constant.fps)
                 else:
                     print("Not using generated sub file... spliting file...")
                     video = VideoFileClip(Constant.baseInputVideoFolderPath + self.selectedInstrumentFolder + "/" + title + Constant.mp4suffix)
-                    video = self.changeVideoSetting(video, duration, 60)
+                    video = self.changeVideoSetting(video, duration, Constant.fps)
                 hashmapFileName_File[generatedFilePath]=video
             self.listSlicedVideos.append(video)
             del video
@@ -127,10 +128,7 @@ class VideoManager():
             noteCounter = noteCounter + 1
 
         if len(self.listSlicedVideos) > 0:
-            if len(self.listSlicedVideos) == 1:
-                self.saveVideoIntoFile(self.listSlicedVideos[0], self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)
-            else:
-                self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)    
+            self.concatVideoAndSave(self.listSlicedVideos, self.tmpOutputFolderPath + "/" + Constant.defaultSubFilePrefix + str(tmpFileConter) + Constant.mp4suffix)    
             for video in self.listSlicedVideos:
                 video.close()
                 del video
@@ -151,7 +149,11 @@ class VideoManager():
     def concatVideoAndSave(self, listSlicedVideos, path):
         print("Concatenating sliced videos...")
         duration = self.getDuration(listSlicedVideos)
-        concatenatedVideo=concatenate_videoclips(listSlicedVideos)
+        concatenatedVideo = None
+        if len(self.listSlicedVideos) == 1:
+            concatenatedVideo=listSlicedVideos[0]
+        else:
+            concatenatedVideo=concatenate_videoclips(listSlicedVideos)
         print(concatenatedVideo.duration)
         print("Saving...")
         self.saveVideoIntoFile(concatenatedVideo, path)
@@ -162,30 +164,33 @@ class VideoManager():
         
     def saveVideoIntoFile(self, video, path):
         video = video.subclip(0.0, video.duration - Constant.exceedTime)
-        video.write_videofile(path, codec=Constant.codec, fps=60)
+        video.write_videofile(path, codec=Constant.codec, fps=Constant.fps)
         
     def changeVideoSetting(self, video, duration, fps):
-        nframes = int(duration)*60
+        nframes = int(duration)*Constant.fps
         print("##############Before###############")
         print("duration", video.duration)
         print("frames:", (video.fps * video.duration))
-        print("nbFrames:", video.reader.nframes)
-        print("nbFrames:", video.reader.ffmpeg_duration)
-        print("nbFrames:", video.reader.duration)
-        print("nbFrames:", video.reader.fps)
-        video = video.subclip(0.0, duration)
-        video.duration=duration
+        print("video.reader.nframes:", video.reader.nframes)
+        print("ffmpeg_duration:", video.reader.ffmpeg_duration)
+        print("duration:", video.reader.duration)
+        print("fps:", video.reader.fps)
+        if (duration < video.duration):
+            video = video.subclip(0.0, duration)
+            video.duration=duration
+            video.reader.duration=duration
+            video.reader.ffmpeg_duration=duration
         video.set_fps(fps)
-        video.reader.duration=duration
-        video.reader.ffmpeg_duration=duration
         video.reader.nframes=nframes
         video.reader.fps=fps
+        print("##############After###############")
         print("duration", video.duration)
         print("frames:", (video.fps * video.duration))
-        print("nbFrames:", video.reader.nframes)
+        print("video.reader.nframes:", video.reader.nframes)
         print("ffmpeg_duration:", video.reader.ffmpeg_duration)
         print("reader.duration:", video.reader.duration)
         print("reader.fps:", video.reader.fps)
+        print("")
         return video
     
     def getDuration(self, listVideos):
